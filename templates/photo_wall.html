@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3d照片表白墙</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #f0e6ff;  /* 淡紫色 */
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            touch-action: none;
+        }
+
+        /* perspective指定了观察者与 Z=9 平面的距离，使具有三维位置变换的元素产生透视效果。 */
+        body {
+            overflow: hidden;
+            display: flex;
+            perspective: 1000px;
+            background: var(--background-color);
+        }
+
+        @property --d {
+            syntax: '<angle>';
+            inherits: true;
+            initial-value: 0deg;
+        }
+
+        .click_me {
+            width: 200px;
+            aspect-ratio: 1;
+            font-size: 30px;
+            color: #fff;
+            background: none;
+            border: none;
+            border-radius: 20px;
+            position: relative;
+            z-index: 0;
+            transition: .3s;
+            cursor: pointer;
+        }
+
+        .click_me:before {
+            content: "";
+            position: absolute;
+            inset: -8px;
+            padding: 8px;
+            border-radius: 28px;
+            background: conic-gradient(from var(--d, 0deg),
+                    #21D4FD,
+                    #0000 30deg 120deg,
+                    #B721FF 150deg 180deg,
+                    #0000 210deg 300deg,
+                    #21D4FD 330deg);
+            -webkit-mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: intersect
+        }
+
+        .click_me:after {
+            content: "";
+            position: absolute;
+            inset: -100px;
+            background:
+                radial-gradient(80px at left 150px top 120px, #21D4FD 98%, #0000),
+                radial-gradient(80px at right 150px bottom 120px, #B721FF 98%, #0000);
+            filter: blur(60px);
+            opacity: .5;
+        }
+
+        .click_me:before,
+        .click_me:after {
+            transition: .5s, 99999s 99999s transform, 99999s 99999s --d;
+        }
+
+        .click_me:hover {
+            box-shadow: 0 0 0 1px #666;
+        }
+
+
+        .click_me:hover:after {
+            transform: rotate(3600deg);
+            transition: .5s, 60s linear transform;
+        }
+
+        .click_me:hover:before {
+            --d: 3600deg;
+            transition: .5s, 60s linear --d;
+        }
+
+        .click_me:hover:before {
+            background-color: #222;
+        }
+
+        .click_me_shell {
+            margin: 0;
+            /* min-height: 100vh; */
+            display: grid;
+            place-content: center;
+            grid-auto-flow: column;
+            background-color: #1b1b1c;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #dragBox,
+        .spinBox {
+            position: relative;
+            display: flex;
+            margin: auto;
+            transform-style: preserve-3d;
+            transform: rotateX(-10deg);
+        }
+
+        #dragBox {
+            transform: rotateX(-30deg)
+        }
+
+        .spinBox {
+            width: 120px;
+            height: 140px;
+            animation: spin 200s infinite linear;
+        }
+
+        #spinBox {
+            animation: spin 200s infinite linear; /* 主圈旋转速度 */
+        }
+
+        #spinBox2 {
+            position: absolute;
+            top: 120%;
+            animation: spin 150s infinite linear; /* 上方圈旋转速度更快 */
+        }
+
+        #spinBox3 {
+            position: absolute;
+            top: -120%;
+            animation: spin 250s infinite linear; /* 下方圈旋转速度更慢 */
+        }
+
+        #dragBox img {
+            transform-style: preserve-3d;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: 0 0 8px #fff;
+            /*倒影 */
+            -webkit-box-reflect: below 10px linear-gradient(transparent, transparent, #0005);
+        }
+
+        #dragBox img:hover {
+            box-shadow: 0 0 15px #fff;
+        }
+
+        /*自动旋转 */
+        @keyframes spin {
+            from {
+                transform: rotateY(0deg);
+            }
+
+            to {
+                transform: rotateY(360deg);
+            }
+        }
+
+        .love-days {
+            position: fixed;
+            bottom: 250px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 50px;
+            color: #ff69b4;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeIn 1s ease-in;
+            z-index: 1000;
+            opacity: 0;
+            text-align: center;
+            padding: 10px 20px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="love-days" id="loveDays"></div>
+    <div class="click_me_shell" id="click_me_shell" style="display: none;">
+        /* <audio loop src="img/落在生命里的光-尹昔眠.m4a" id="audio" autoplay preload="auto"></audio>
+        <button class="click_me">Click Me</button> */
+    </div>
+    <div id="dragBox">
+        <div class="spinBox" id="spinBox">
+            <!-- 照片将由 JavaScript 动态加载 -->
+        </div>
+        <div class="spinBox" id="spinBox2">
+            <!-- 照片将由 JavaScript 动态加载 -->
+        </div>
+        <div class="spinBox" id="spinBox3">
+            <!-- 照片将由 JavaScript 动态加载 -->
+        </div>
+    </div>
+    <script>
+        // 计算恋爱天数
+        function calculateLoveDays() {
+            const startDate = new Date('2024-05-01');
+            const today = new Date();
+            const timeDiff = today.getTime() - startDate.getTime();
+            const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+            return dayDiff;
+        }
+
+        // 显示恋爱天数
+        function showLoveDays() {
+            const loveDaysElement = document.getElementById('loveDays');
+            const days = calculateLoveDays();
+            loveDaysElement.textContent = `钱健康和刘莹已经相恋${days}天`;
+            setTimeout(() => {
+                loveDaysElement.style.opacity = '1';
+            }, 1000);
+        }
+
+        let radius = 560;
+        let outDom = document.getElementById("dragBox");
+        let spinDom = document.getElementById("spinBox");
+        let spinDom2 = document.getElementById("spinBox2");
+        let spinDom3 = document.getElementById("spinBox3");
+
+        function setStyle(delayTime, dom, i, len) {
+            dom.style.transform = "rotateY(" + (i * (360 / len)) + "deg) translateZ(" + radius + "px)";
+            dom.style.transition = "transform 1s";
+            dom.style.transitionDelay = delayTime || (len - i) / 4 + "s";
+        }
+
+        // 将样式应用逻辑提取到一个函数中
+        function initStyleAndAnimation(aEle, aEle2, aEle3, delayTime) {
+            for (let i = 0; i < aEle.length; i++) {
+                setStyle(delayTime, aEle[i], i, aEle.length);
+            }
+            for (let i = 0; i < aEle2.length; i++) {
+                setStyle(delayTime, aEle2[i], i, aEle2.length);
+            }
+            for (let i = 0; i < aEle3.length; i++) {
+                setStyle(delayTime, aEle3[i], i, aEle3.length);
+            }
+            
+            // 延迟显示天数，确保在动画开始后出现
+            setTimeout(showLoveDays, delayTime);
+        }
+
+        // 页面加载完成后获取照片数据并初始化
+        window.onload = function() {
+            fetch('/api/photos')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && (data.group1 || data.group2 || data.group3)) {
+                        // 初始化照片墙
+                        const groups = {
+                            group1: spinDom,
+                            group2: spinDom2,
+                            group3: spinDom3
+                        };
+
+                        for (const groupName in groups) {
+                            const container = groups[groupName];
+                            const photos = data[groupName] || [];
+                            container.innerHTML = ''; // 清空现有内容
+                            photos.forEach(photoSrc => {
+                                const img = document.createElement('img');
+                                img.src = photoSrc;
+                                container.appendChild(img);
+                            });
+                        }
+
+                        // 获取所有新的 img 元素
+                        let aImg = spinDom.getElementsByTagName('img');
+                        let aImg2 = spinDom2.getElementsByTagName('img');
+                        let aImg3 = spinDom3.getElementsByTagName('img');
+
+                        let aEle = [...aImg];
+                        let aEle2 = [...aImg2];
+                        let aEle3 = [...aImg3];
+
+                        let audio = document.getElementById('audio');
+                        if (audio) {
+                            audio.play().catch(e => console.error("Audio play failed:", e));
+                        }
+                        
+                        setTimeout(() => {
+                            // 使用原始的动画初始化方式
+                            init(1000);
+                            showLoveDays();
+                        }, 100);
+                    } else {
+                        console.error("No photo data received or data is empty.");
+                        // 可以在这里显示一些提示信息给用户
+                        outDom.innerHTML = '<p style="color: white; text-align: center; margin-top: 50px;">照片加载失败或暂无照片。</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching photos:', error);
+                    outDom.innerHTML = '<p style="color: white; text-align: center; margin-top: 50px;">加载照片时出错，请检查网络或联系管理员。</p>';
+                    // 即使照片加载失败，也尝试显示日期
+                    showLoveDays(); 
+                });
+        }
+
+        function init(delayTime) {
+            let aImg = spinDom.getElementsByTagName('img');
+            let aImg2 = spinDom2.getElementsByTagName('img');
+            let aImg3 = spinDom3.getElementsByTagName('img');
+
+            let aEle = [...aImg];
+            let aEle2 = [...aImg2];
+            let aEle3 = [...aImg3];
+            
+            for (let i = 0; i < aEle.length; i++) {
+                setStyle(delayTime, aEle[i], i, aEle.length);
+            }
+            for (let i = 0; i < aEle2.length; i++) {
+                setStyle(delayTime, aEle2[i], i, aEle2.length);
+            }
+            for (let i = 0; i < aEle3.length; i++) {
+                setStyle(delayTime, aEle3[i], i, aEle3.length);
+            }
+        }
+
+        // 暂停开始旋转
+        function playSpin(yes) {
+            // 确保 spinDom 存在
+            if (spinDom) {
+                spinDom.style.animationPlayState = (yes ? 'running' : 'paused');
+            } 
+            // 如果需要控制 spinDom2 和 spinDom3 的动画，也需要在这里添加判断
+            if (spinDom2) spinDom2.style.animationPlayState = (yes ? 'running' : 'paused');
+            if (spinDom3) spinDom3.style.animationPlayState = (yes ? 'running' : 'paused');
+        }
+        
+        function changeRotate(obj) {
+            // X轴旋转0-180度
+            if (tY > 180)
+                tY = 180;
+            if (tY < 0)
+                tY = 0;
+            // y轴旋转角度不限制
+            obj.style.transform = "rotateX(" + (-tY) + "deg) rotateY(" + (tX) + "deg)";
+        }
+
+        let startX, startY, endX, endY, tX = 0,
+            tY = 10, // 保持初始倾斜角度
+            desX = 0,
+            desY = 0;
+        
+        //鼠标移动事件 (确保 outDom 存在)
+        document.onpointerdown = function (e) {
+            if (!outDom) return; // 如果 dragBox 加载失败则不绑定事件
+            //清除惯性定时器
+            clearInterval(outDom.timer);
+            e = e || window.event;
+            //鼠标点击位置
+            startX = e.clientX, startY = e.clientY;
+            this.onpointermove = function (e) {
+                playSpin(false);
+                e = e || window.event;
+                //记录结束时位置
+                endX = e.clientX,
+                    endY = e.clientY;
+                //计算移动距离 并修改角度
+                desX = endX - startX;
+                desY = endY - startY;
+                tX += desX * 0.1;
+                tY += desY * 0.1;
+                changeRotate(outDom);
+                startX = endX;
+                startY = endY;
+            }
+            //鼠标离开时 开始自动旋转
+            this.onpointerup = function (e) {
+                //惯性旋转
+                outDom.timer = setInterval(function () {
+                    desX *= 0.95;
+                    desY *= 0.95;
+                    tX += desX * 0.1;
+                    tY += desY * 0.1;
+                    changeRotate(outDom);
+                    playSpin(false); // 在惯性期间应保持暂停
+                    if (Math.abs(desX) < 0.5 && Math.abs(desY) < 0.5) {
+                        clearInterval(outDom.timer);
+                        playSpin(true); // 惯性结束后恢复旋转
+                    }
+                }, 16); // ~60fps
+                this.onpointermove = this.onpointerup = null;
+            }
+            return false;
+        }
+    </script>
+</body>
+
+</html>

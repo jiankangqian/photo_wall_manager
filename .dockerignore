@@ -1,0 +1,32 @@
+# Git 仓库元数据
+.git
+.gitignore
+
+# Docker 文件
+Dockerfile
+.dockerignore
+
+# Python 虚拟环境
+venv
+.venv
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE/编辑器配置文件
+.idea/
+.vscode/
+
+# 敏感的环境变量文件 (这些应该在运行时注入，而不是构建进镜像)
+.env
+.env.*
+!env.production  # 如果你确定要在镜像中包含一个模板，但通常不推荐
+
+# 其他不需要包含在镜像中的文件
+*.log
+*.db
+*.sqlite3
+*.bak
+*.swp
