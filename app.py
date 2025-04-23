@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv # 导入 load_dotenv
+from urllib.parse import quote_plus
 
 # --- 加载环境变量 ---
 # 根据 FLASK_ENV 决定加载哪个 .env 文件
@@ -24,7 +25,12 @@ from sqlalchemy import desc, asc # 导入排序
 app = Flask(__name__)
 # 从环境变量读取配置
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_fallback_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql+mysqlconnector://root:20190901@localhost/photo_wall')
+pwd = urllib.parse.quote_plus(os.getenv('DB_PASSWORD'))
+uri = (
+    f"mysql+mysqlconnector://{os.getenv('DB_USER')}:{pwd}"
+    f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+)
+app.config['SQLALCHEMY_DATABASE_URI'] = uri
 # 其他配置保持不变
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
