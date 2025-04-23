@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv # 导入 load_dotenv
 from urllib.parse import quote_plus
+import urllib.parse
 
 # --- 加载环境变量 ---
 # 根据 FLASK_ENV 决定加载哪个 .env 文件
