@@ -97,6 +97,14 @@ def index():
     # 指向你的照片墙页面
     return render_template('photo_wall.html')
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/tools')
+def tools():
+    return render_template('covert__html_entity.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:

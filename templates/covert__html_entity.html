@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>SQL “&lt; / &gt;” 转义工具</title>
+  <style>
+    /* === Basic Reset === */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 960px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      padding: 32px;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 { font-size: 28px; margin-bottom: 24px; text-align: center; }
+
+    textarea {
+      width: 100%; height: 260px;
+      border: 1px solid #ccc; border-radius: 8px;
+      padding: 12px;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 14px; resize: vertical; line-height: 1.4;
+      transition: border 0.3s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #007aff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    }
+
+    .btn {
+      display: inline-block;
+      margin: 24px auto 0 auto;
+      padding: 12px 32px;
+      font-size: 16px;
+      border: none; border-radius: 999px;
+      background: #007aff; color: #fff;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.15s;
+    }
+    .btn:hover   { background: #0056c8; transform: translateY(-2px); }
+    .btn:active  { transform: translateY(0); }
+
+    .output-wrapper { margin-top: 32px; position: relative; }
+    .output-label   { font-weight: bold; margin-bottom: 8px; display: block; }
+
+    .output {
+      white-space: pre-wrap;
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 200px;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 14px;
+      color: #c62828; /* 红色高亮 */
+    }
+
+    /* 复制按钮样式 */
+    #copyBtn {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      padding: 8px 24px;
+      font-size: 14px;
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.15s;
+    }
+    #copyBtn:hover  { background: #3e8e41; transform: translateY(-2px); }
+    #copyBtn:active { transform: translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SQL “&lt; / &gt;” 转义工具</h1>
+
+    <!-- Source SQL / MyBatis XML -->
+    <textarea id="source" placeholder="在此处粘贴 SQL / MyBatis 语句..."></textarea>
+
+    <!-- Convert Button -->
+    <button id="convertBtn" class="btn">转换 &gt; &lt; 为 HTML 实体</button>
+
+    <!-- Result Output -->
+    <div class="output-wrapper">
+      <span class="output-label">转换结果：</span>
+      <!-- Copy button (initially hidden) -->
+      <button id="copyBtn" style="display:none;">复制代码</button>
+      <pre id="result" class="output"></pre>
+    </div>
+    <a href="/" class="back-link">返回首页</a>
+  </div>
+
+  <script>
+    /**
+     * 转义 SQL / MyBatis 语句中的 < 与 > 为 HTML 实体，
+     * 但保留 <select> 与 </select> 标签本身。
+     * @param {string} sql 原始文本
+     * @returns {string} 处理后的文本
+     */
+    function escapeSpecial(sql) {
+      // 1. 替换所有
+      let converted = sql.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      // 2. 恢复 select 标签
+      converted = converted.replace(/&lt;(\/?select[\s\S]*?)&gt;/gi, "<$1>");
+      return converted;
+    }
+
+    const convertBtn = document.getElementById("convertBtn");
+    const copyBtn    = document.getElementById("copyBtn");
+    const resultBox  = document.getElementById("result");
+
+    // 转换按钮
+    convertBtn.addEventListener("click", () => {
+      const input = document.getElementById("source").value.trim();
+      if (!input) {
+        alert("请先输入 SQL / MyBatis 语句！");
+        return;
+      }
+      const output = escapeSpecial(input);
+      resultBox.textContent = output;
+      copyBtn.style.display = 'inline-block';
+    });
+
+    // 复制按钮
+    copyBtn.addEventListener("click", () => {
+      const text = resultBox.textContent;
+      if (!text) {
+        alert("没有可复制的内容！");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = "已复制！";
+        setTimeout(() => (copyBtn.textContent = "复制代码"), 1500);
+      }).catch(() => {
+        alert("复制失败，请手动复制。");
+      });
+    });
+  </script>
+</body>
+</html>
