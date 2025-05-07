@@ -20,15 +20,25 @@
         html,
         body {
             height: 100%;
-            touch-action: none;
+            /* 移除 touch-action: none，允许正常滚动 */
         }
 
         /* perspective指定了观察者与 Z=9 平面的距离，使具有三维位置变换的元素产生透视效果。 */
         body {
-            overflow: hidden;
+            /* 允许页面滚动 */
+            display: flex;
+            flex-direction: column;
+            background: var(--background-color);
+            min-height: 100vh; /* 确保有足够的内容可以滚动 */
+            overflow-y: auto; /* 明确允许垂直滚动 */
+        }
+
+        .photo-wall-container {
             display: flex;
             perspective: 1000px;
-            background: var(--background-color);
+            flex: 1;
+            min-height: 100vh;
+            position: relative;
         }
 
         @property --d {
@@ -210,26 +220,67 @@
                 transform: translate(-50%, 0);
             }
         }
+
+        /* 添加填充区域，使页面可滚动 */
+        .footer-spacer {
+            height: 500px;
+            width: 100%;
+        }
+
+        /* 备案信息样式 */
+        #beian-info {
+            display: none; /* 初始不显示 */
+            text-align: center; 
+            padding: 10px 0; 
+            position: fixed; 
+            bottom: 5px; 
+            width: 100%; 
+            background-color: transparent; 
+            z-index: 9999; /* 确保在最顶层 */
+        }
+
+        #beian-info a {
+            text-decoration: none; 
+            color: #999999; 
+            font-size: 12px; 
+            opacity: 0.6; /* 半透明 */
+            transition: opacity 0.5s ease; /* 平滑过渡 */
+        }
+
+        #beian-info a:hover {
+            opacity: 1; /* 鼠标悬停时完全不透明 */
+        }
     </style>
 </head>
 
 <body>
-    <div class="love-days" id="loveDays"></div>
-    <div class="click_me_shell" id="click_me_shell" style="display: none;">
-        /* <audio loop src="img/落在生命里的光-尹昔眠.m4a" id="audio" autoplay preload="auto"></audio>
-        <button class="click_me">Click Me</button> */
+    <div class="photo-wall-container">
+        <div class="love-days" id="loveDays"></div>
+        <div class="click_me_shell" id="click_me_shell" style="display: none;">
+            /* <audio loop src="img/落在生命里的光-尹昔眠.m4a" id="audio" autoplay preload="auto"></audio>
+            <button class="click_me">Click Me</button> */
+        </div>
+        <div id="dragBox">
+            <div class="spinBox" id="spinBox">
+                <!-- 照片将由 JavaScript 动态加载 -->
+            </div>
+            <div class="spinBox" id="spinBox2">
+                <!-- 照片将由 JavaScript 动态加载 -->
+            </div>
+            <div class="spinBox" id="spinBox3">
+                <!-- 照片将由 JavaScript 动态加载 -->
+            </div>
+        </div>
     </div>
-    <div id="dragBox">
-        <div class="spinBox" id="spinBox">
-            <!-- 照片将由 JavaScript 动态加载 -->
-        </div>
-        <div class="spinBox" id="spinBox2">
-            <!-- 照片将由 JavaScript 动态加载 -->
-        </div>
-        <div class="spinBox" id="spinBox3">
-            <!-- 照片将由 JavaScript 动态加载 -->
-        </div>
+
+    <!-- 添加填充区域，使页面可滚动 -->
+    <div class="footer-spacer"></div>
+    
+    <!-- 添加备案信息 -->
+    <div id="beian-info">
+        <a href="http://beian.miit.gov.cn/" target="_blank">皖ICP备2025084473号</a>
     </div>
+    
     <script>
         // 计算恋爱天数
         function calculateLoveDays() {
@@ -338,6 +389,11 @@
                     // 即使照片加载失败，也尝试显示日期
                     showLoveDays(); 
                 });
+                
+            // 延迟3秒后显示备案号，不再依赖滚动事件
+            setTimeout(function() {
+                document.getElementById('beian-info').style.display = 'block';
+            }, 3000);
         }
 
         function init(delayTime) {
